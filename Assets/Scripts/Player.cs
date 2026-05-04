@@ -10,6 +10,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float walkSpeed = 7f;
     [SerializeField] private float runSpeed = 15f;
     [SerializeField] private float jumpForce = 12f; // Fuerza del impulso del salto
+    [SerializeField] private int maxJumps = 2;
 
     [Header("Combat Settings")]
     [SerializeField] private float attackRange = 1.5f; // El alcance del golpe
@@ -19,6 +20,7 @@ public class Player : MonoBehaviour
     [Header("Detection of Input Actions")]
     private Rigidbody2D rbPlayer; // Detecta las físicas implementadas en el input actions
     private Vector2 moveInput;
+    private int jumpsRemaining; // Contador de saltos restantes del player durante cierto tiempo
     private bool isRunning; // Detecta si shift está presionado (Si el player está corriendo), al ser escrito asi, automáticamente empieza siendo false
     private bool isCrouching; // Detecta si la tecla de abajo está presionada (Si el player se agachó), al ser escrito asi, automáticamente empieza siendo false
     private bool usingShield; // Detecta si la tecla V está presionada (Si el player activó el escudo), al ser escrito asi, automáticamente empieza siendo false
@@ -29,6 +31,7 @@ public class Player : MonoBehaviour
         // Se encarga que al iniciar el juego, el jugador permanezca en el escenario, esto permite conectar componentes, a diferencia del start que da valores iniciales
         rbPlayer = GetComponent<Rigidbody2D>(); // Busca al componente rigidbody en el player
         rbPlayer.freezeRotation = true; // Hace que el objeto no gire
+        jumpsRemaining = maxJumps; // Inicialmente el contador de saltos que puede dar el player estará al máximo
     }
 
     // Control de botones del player
@@ -62,13 +65,28 @@ public class Player : MonoBehaviour
     {
         // Según la tecla presionada y la presión de esta, se detecta el input que va a hacerse
 
-        if (context.started && Mathf.Abs(rbPlayer.linearVelocity.y) < 0.01f) // context.started detecta el momento exacto en el que se presiona la tecla de abajo, evitando que salte varias veces seguidas como pasa al usar performed
-            // Mathf.Abs(...) convierte los valores en positivo, además se usa linea velocity.y para que detecte la velocidad del player, dependiendo de esto se ajuste, el 0.01 es un margen de error
-            // Si fue presionada la tecla de abajo y hubo movimiento vertical, por más pequeño que sea (por eso ese margen de error)
+        if (Mathf.Abs(rbPlayer.linearVelocity.y) < 0.01f) // Mathf.Abs(...) convierte los valores en positivo, además se usa linea velocity.y para que detecte la velocidad del player, dependiendo de esto se ajuste, el 0.01 es un margen de error
+                                                          // Si hubo movimiento vertical, por más pequeño que sea (por eso ese margen de error)... CADA QUE ESTÁ EN EL PISO SE REINICIARÁ EL CONTADOR DE SALTOS RESTANTES
         {
+            jumpsRemaining = maxJumps;
+        }
+        if (context.started && jumpsRemaining > 0) // Si fue presionada la barra espaciadora y aún le quedan saltos restantes al player...
+        { 
+            rbPlayer.linearVelocity = new Vector2(rbPlayer.linearVelocity.x,0); // Mantiene la velocidad de los lados para no frenar en seco, pero permite aplicar un impulso nuevo de salto desde 0 (Se crea un nuevo vector en donde se tiene esta información)
             rbPlayer.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse); // indica el movimiento de saltar
             // Usa el addForce con Impulse que actua como una explosión debajo del personaje, dandole la energia para hacer el movimiento para que parezca real
+
+            jumpsRemaining--;
+            Debug.Log("Saltos restantes: " + jumpsRemaining);
         }
+
+        //if (context.started && Mathf.Abs(rbPlayer.linearVelocity.y) < 0.01f) // context.started detecta el momento exacto en el que se presiona la tecla de abajo, evitando que salte varias veces seguidas como pasa al usar performed
+        //    // Mathf.Abs(...) convierte los valores en positivo, además se usa linea velocity.y para que detecte la velocidad del player, dependiendo de esto se ajuste, el 0.01 es un margen de error
+        //    // Si fue presionada la barra espaciadora y hubo movimiento vertical, por más pequeño que sea (por eso ese margen de error)
+        //{
+        //    rbPlayer.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse); // indica el movimiento de saltar
+        //    // Usa el addForce con Impulse que actua como una explosión debajo del personaje, dandole la energia para hacer el movimiento para que parezca real
+        //}
     }
 
     // MECÁNICAS DE COMBATE BÁSICO
