@@ -898,7 +898,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1586854630}
         m_TargetAssemblyTypeName: ChangeScene, Assembly-CSharp
-        m_MethodName: CargarEscena
+        m_MethodName: LoadScene
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

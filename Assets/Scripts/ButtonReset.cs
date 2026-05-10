@@ -5,9 +5,9 @@ using UnityEngine.SceneManagement;
 
 public class ButtonReset : MonoBehaviour
 {
-    public void Reiniciar(int Nescena)
+    public void ResetScene(int numScene)
     {
-        //Time.timeScale = 1f;
-        SceneManager.LoadScene(Nescena);
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(numScene);
     }
 }

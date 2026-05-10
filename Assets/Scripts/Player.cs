@@ -93,13 +93,19 @@ public class Player : MonoBehaviour
 
     public void onFastAttack(InputAction.CallbackContext context) // Ataque rápido
     {
-        if (context.started && Time.time >= nextAttackTime) // / context.started detecta el momento exacto en el que se presiona la tecla de abajo, evitando que salte varias veces seguidas como pasa al usar performed
-            // Si presiona el botón Z y si ya pasó el tiempo de espera entre ataques
+        if (!EnemySquadBattle.IsInMathBattle) // Revisa: Si en el enemigo Squad no se activo el modo de estar en batalla matemática...
         {
-            Debug.Log("Ataque con Z");
-            GiveAttack(1f, 0f); // Envia el ataque al enemigo, en este caso al ser un ataque rápido, le otorga 1 punto de daño
-            nextAttackTime = Time.time + timeBetweenAttacks; // Hace que tengas que esperar un poco para dar tu siguiente ataque
+            // Entonces la tecla Z será usada como ataque rápido
+
+            if (context.started && Time.time >= nextAttackTime) // / context.started detecta el momento exacto en el que se presiona la tecla de abajo, evitando que salte varias veces seguidas como pasa al usar performed
+            // Si presiona el botón Z y si ya pasó el tiempo de espera entre ataques
+            {
+                Debug.Log("Ataque con Z");
+                GiveAttack(1f, 0f); // Envia el ataque al enemigo, en este caso al ser un ataque rápido, le otorga 1 punto de daño
+                nextAttackTime = Time.time + timeBetweenAttacks; // Hace que tengas que esperar un poco para dar tu siguiente ataque
+            }
         }
+        // Si no fue así, entonces Z será usada como confirmación de respuesta
     }
 
     public void onHeavyAttack(InputAction.CallbackContext context) // Ataque pesado
