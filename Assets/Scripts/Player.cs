@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -5,6 +6,8 @@ public class Player : MonoBehaviour
 {
     [Header("Life Statistics")]
     [SerializeField] private float health = 6f; // Se usa [SerializeField] para hacer facil modificaciones a los valores hasta tener los definitivos
+    public bool isAlive = true; // Estado actual
+    public TextMeshProUGUI TextLevelHealthUI;
 
     [Header("Player Movement")]
     [SerializeField] private float walkSpeed = 7f;
@@ -32,6 +35,14 @@ public class Player : MonoBehaviour
         rbPlayer = GetComponent<Rigidbody2D>(); // Busca al componente rigidbody en el player
         rbPlayer.freezeRotation = true; // Hace que el objeto no gire
         jumpsRemaining = maxJumps; // Inicialmente el contador de saltos que puede dar el player estará al máximo
+    }
+
+    void Start()
+    {
+        if (TextLevelHealthUI != null)
+        {
+            TextLevelHealthUI.text = "Vida: " + health;
+        }
     }
 
     // Control de botones del player
@@ -131,13 +142,15 @@ public class Player : MonoBehaviour
         {
             if (obj.CompareTag("Enemy")) // Si lo que golpeó es un enemigo...
             {
-                EnemyStandard scriptEnemy = obj.GetComponent<EnemyStandard>(); // Se crea una variable temporal para acceder a la información de salud actual del enemigo, de esta manera se define hasta que momento se atacará
+                EnemyStandard scriptEnemyStandard = obj.GetComponent<EnemyStandard>(); // Se crea una variable temporal para acceder a la información de salud actual del enemigo, de esta manera se define hasta que momento se atacará
 
-                if (scriptEnemy != null)
+                EnemySquadBattle scriptEnemySquad = obj.GetComponent<EnemySquadBattle>();
+                
+                if (scriptEnemyStandard != null)
                 {
-                    scriptEnemy.EnemyTakingDamage(damageCaused); // Dar la orden de recibir daño
+                    scriptEnemyStandard.EnemyTakingDamage(damageCaused); // Dar la orden de recibir daño
                     
-                    if (thrustApplied > 0) // APLICAR EMPUJE (Si es que mandaste un valor mayor a 0)
+                    if (thrustApplied > 0) // APLICAR EMPUJE (Si es que un valor llego a ser mayor a 0)
                     {
                         Vector2 direction = (obj.transform.position - transform.position).normalized; // .normalized hace que unity olvide la distancia anterior
                         obj.GetComponent<Rigidbody2D>().AddForce(direction * thrustApplied, ForceMode2D.Impulse);
@@ -157,8 +170,21 @@ public class Player : MonoBehaviour
         {
             health -= quantify;
             Debug.Log("Vida Player: " + health);
+
+            if (TextLevelHealthUI != null)
+            {
+                TextLevelHealthUI.text = "Vida: " + health;
+            }
+
             if (health <= 0f)
             {
+                isAlive = false;
+                GameOverController EndPlayer = Object.FindFirstObjectByType<GameOverController>(); // Se llama al script del game over
+                if (EndPlayer != null)
+                {
+                    EndPlayer.ActivateGameOver(); // Se muestra la pantalla de game over
+                }
+
                 Destroy(gameObject);
             }
         }
