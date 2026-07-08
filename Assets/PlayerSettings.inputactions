@@ -224,7 +224,7 @@
                 {
                     "name": "",
                     "id": "e4df45e7-652c-42fc-913d-98c5d38e0b3b",
-                    "path": "<Keyboard>/escape",
+                    "path": "<Keyboard>/p",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -267,6 +267,15 @@
             "id": "02fe4a77-703d-4332-a4c2-782067c463f7",
             "actions": [
                 {
+                    "name": "StartPuzzle",
+                    "type": "Button",
+                    "id": "95fdddfe-6a3c-4e94-99da-6333385ab68f",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "ExitPuzzle",
                     "type": "Button",
                     "id": "5a541077-765e-4993-9d73-e801dfbd1cb7",
@@ -305,6 +314,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "ConfirmAnswer",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "02d38b2c-c0a6-4c50-a49b-7c67d73988e3",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "StartPuzzle",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
