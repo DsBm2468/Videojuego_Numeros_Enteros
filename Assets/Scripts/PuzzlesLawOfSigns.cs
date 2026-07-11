@@ -33,6 +33,7 @@ public class PuzzlesLawOfSigns : MonoBehaviour
     public float gigantSize = 2.5f; // Se vuelve Gigante
     public float smallSize = 0.4f; // Se vuelve Pequeño
 
+    private bool puzzleSolved = false;
     //private bool PuzzleActivate = false; // Indica si el acertijo está activado o no, facilitando la opción de salir de este sin quedar en un bucle infinito
 
     void Start()
@@ -148,9 +149,11 @@ public class PuzzlesLawOfSigns : MonoBehaviour
             feedbackText.text = "<color=green>CORRECTO!!!</color>";
             Debug.Log("Acertijo Resuelto");
             transformationSpell = true;
+            puzzleSolved = true;
             ApplyChangeSize();
-            Invoke("ClosePuzzlePanel", 0.5f);
-            //ClosePuzzlePanel();
+            //Invoke("ClosePuzzlePanel", 0.5f);
+            ClosePuzzlePanel();
+            Destroy(gameObject);
         }
         else
         {
