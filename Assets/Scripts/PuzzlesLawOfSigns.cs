@@ -20,7 +20,7 @@ public class PuzzlesLawOfSigns : MonoBehaviour
     private int correctAnswer; // Información sobre la respuesta correcta de las operaciones
     private string currentInput = ""; // Respuesta dada por el jugador
     private Rigidbody2D playerRb;
-    private GameObject originalSizePlayer;
+    private GameObject gameObjectPlayer;
 
     [Header("Puzzle Area settings")]
     [SerializeField] public float detectionRange = 2.5f;
@@ -72,11 +72,13 @@ public class PuzzlesLawOfSigns : MonoBehaviour
             {
                 UIPromptInteraction.SetActive(false);
                 Debug.Log("<color=yellow> Player detectado, ACERTIJO ACTIVADO</color>");
+                currentInput = "";
+                playerInputText.text = "";
                 LoadOperation(); // Se dirigue a la función de cargar operación
                 canvasMathPuzzles.SetActive(true);
                 feedbackText.text = "";
 
-                originalSizePlayer = detectionPlayer.gameObject; // Se guarda el tamaño original del player para usarlo cuando vuelva a la normalidad
+                gameObjectPlayer = detectionPlayer.gameObject; // Se guarda temporalmente al player, la referencia del objeto jugador detectado
                 playerRb = detectionPlayer.GetComponent<Rigidbody2D>(); // Se selecciona el rigidbody del player
                 
                 if(playerRb != null)
@@ -123,6 +125,16 @@ public class PuzzlesLawOfSigns : MonoBehaviour
 
     void ReadPlayerInput()
     {
+        if (Input.GetKeyDown(KeyCode.Backspace)) // Si el player decide borrar su respuesta (presiona el botón backspace)...
+        {
+            if (currentInput.Length > 0) // y Si el player ya había escrito algo...
+            {
+                currentInput = currentInput.Substring(0, currentInput.Length - 1); // Se borrará el último string que ha escrito (el 0 indica al primer elemento escrito)\
+                playerInputText.text = currentInput; // Se muestra la respuesta del player en el panel
+            }
+            return; // Cuando ocurre esto, se sale de la funcion para que no detecte más teclas
+        }
+
         foreach (char c in Input.inputString) // Por cada cáracter presionado...
         {
             if (char.IsDigit(c) || c == '-') // Si el valor dado es un digito (0 a 9) o el valor es negativo (lleva el signo -) OJO: HASTA QUE NO SE PRESIONE LA TECLA PARA CONFIRMAR LA RESPUESTA, PUEDES ESCRIBIR CUANTOS CÁRACTERES QUIERAS
@@ -160,13 +172,13 @@ public class PuzzlesLawOfSigns : MonoBehaviour
             feedbackText.text = "<color=red>INCORRECTO!!!</color>";
             Debug.Log("Acertijo Fallido");
             transformationSpell = false;
-            Invoke("ClosePuzzlePanel", 0.5f);
-            //ClosePuzzlePanel();
+            //Invoke("ClosePuzzlePanel", 0.5f);
+            ClosePuzzlePanel();
         }
 
         //Finalmente, se borran los datos dados en el currentInput y playerInputText.text
-        currentInput = "";
-        playerInputText.text = "";
+        //currentInput = "";
+        //playerInputText.text = "";
     }
 
     void ApplyChangeSize()
@@ -184,7 +196,7 @@ public class PuzzlesLawOfSigns : MonoBehaviour
             else
             {
                 playerObj.transform.localScale = new Vector3(0.4f, 0.4f, 1f); // Se vuelve Pequeño
-                Debug.Log("<color=blue>Player Pequeño</colorn>");
+                Debug.Log("<color=blue>Player Pequeño</color>");
                 //Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("Enemies"), false);
             }
         }
@@ -197,10 +209,14 @@ public class PuzzlesLawOfSigns : MonoBehaviour
 
         if (playerRb != null)
         {
-            playerRb.bodyType = RigidbodyType2D.Dynamic; // El player vuelve a su tamaño normal
+            playerRb.bodyType = RigidbodyType2D.Dynamic; // El player vuelve a sus físicas para poder moverse
             playerRb.constraints = RigidbodyConstraints2D.FreezeRotation; // Mantenemos tus restricciones
             playerRb = null; // Finalmente, se limpia la variable para el próximo uso
         }
+
+        //Finalmente, se borran los datos dados en el currentInput y playerInputText.text
+        currentInput = "";
+        playerInputText.text = "";
 
         //if (transformationSpell == true)
         //{

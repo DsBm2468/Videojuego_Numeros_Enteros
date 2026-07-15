@@ -9,6 +9,8 @@ public class Player : MonoBehaviour
     public bool isAlive = true; // Estado actual
     public TextMeshProUGUI TextLevelHealthUI;
 
+    private Vector3 originalSizePlayer;
+
     [Header("Player Movement")]
     [SerializeField] private float walkSpeed = 7f;
     [SerializeField] private float runSpeed = 15f;
@@ -35,6 +37,7 @@ public class Player : MonoBehaviour
         rbPlayer = GetComponent<Rigidbody2D>(); // Busca al componente rigidbody en el player
         rbPlayer.freezeRotation = true; // Hace que el objeto no gire
         jumpsRemaining = maxJumps; // Inicialmente el contador de saltos que puede dar el player estará al máximo
+        originalSizePlayer = transform.localScale; // El tamaño original del player se guardará desde el inicio
     }
 
     void Start()
@@ -203,6 +206,12 @@ public class Player : MonoBehaviour
         
         // Da el resultado al rigidbody para que el personaje se desplace
         rbPlayer.linearVelocity = new Vector2(horizontalVelocity, rbPlayer.linearVelocity.y); // Se usa este nombre (linearVelocity) porque actualmente es rl más compatible con la vversión de unity 6
+    }
+
+    public void ReturnOriginalSize()
+    {
+        transform.localScale = originalSizePlayer; // Vuelve al valor original del player
+        Debug.Log("Player vuelve al tamaño original");
     }
 
     void OnDrawGizmos()
