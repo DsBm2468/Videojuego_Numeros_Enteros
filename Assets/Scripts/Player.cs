@@ -22,6 +22,11 @@ public class Player : MonoBehaviour
     [SerializeField] private float timeBetweenAttacks = 0.5f; // Tiempo de espera entre ataques
     private float nextAttackTime = 0; // Contador interno para el cooldown de ataques
 
+    [Header("Shield Settings")]
+    [SerializeField] private GameObject Shield; // Visual del hechizo de protección (Escudo)
+    [SerializeField] private float shieldDuration = 3f; // Tiempo que dura el escudo activo
+    private float shieldActiveTimer = 0f; // Control interno del tiempo del escudo
+
     [Header("Detection of Input Actions")]
     private Rigidbody2D rbPlayer; // Detecta las físicas implementadas en el input actions
     private Vector2 moveInput;
@@ -58,7 +63,7 @@ public class Player : MonoBehaviour
         moveInput = context.ReadValue<Vector2>(); // Registra la dirección que el jugador asignó
         // Estos valores en x que definen el movimiento son detecdos como: -1 left, 0 static y 1 right
 
-        Debug.Log("Tecla presionada, valor: " + moveInput.x);
+        //Debug.Log("Tecla presionada, valor: " + moveInput.x);
     }
 
     public void OnRun(InputAction.CallbackContext context)
@@ -111,11 +116,11 @@ public class Player : MonoBehaviour
         {
             // Entonces la tecla Z será usada como ataque rápido
 
-            if (context.started && Time.time >= nextAttackTime) // / context.started detecta el momento exacto en el que se presiona la tecla de abajo, evitando que salte varias veces seguidas como pasa al usar performed
+            if (context.started && Time.time >= nextAttackTime) // context.started detecta el momento exacto en el que se presiona la tecla, evitando que ataque varias veces seguidas como pasa al usar performed
             // Si presiona el botón Z y si ya pasó el tiempo de espera entre ataques
             {
-                Debug.Log("Ataque con Z");
-                GiveAttack(1f, 0f); // Envia el ataque al enemigo, en este caso al ser un ataque rápido, le otorga 1 punto de daño
+                Debug.Log("Ataque rápido ejecutado");
+                GiveAttack(1f, 0f); // Envia el ataque al enemigo, en este caso al ser un ataque rápido, le otorga 1 punto de daño (Daño físico, empuje ocasionado por el ataque)
                 nextAttackTime = Time.time + timeBetweenAttacks; // Hace que tengas que esperar un poco para dar tu siguiente ataque
             }
         }
@@ -124,17 +129,67 @@ public class Player : MonoBehaviour
 
     public void onHeavyAttack(InputAction.CallbackContext context) // Ataque pesado
     {
-        Debug.Log("Golpe lanzado");
+        if (!EnemySquadBattle.IsInMathBattle) // Revisa: Si en el enemigo Squad no se activo el modo de estar en batalla matemática...
+        {
+            // Entonces la tecla X será usada como ataque pesado
+
+            if (context.started && Time.time >= nextAttackTime) // context.started detecta el momento exacto en el que se presiona la tecla, evitando que ataque varias veces seguidas como pasa al usar performed
+            // Si presiona el botón X y si ya pasó el tiempo de espera entre ataques
+            {
+                Debug.Log("Ataque pesado ejecutado");
+                GiveAttack(2f, 10f); // Envia el ataque al enemigo, en este caso al ser un ataque pesado, le otorga 2 puntos de daño (Daño físico, empuje ocasionado por el ataque)
+                nextAttackTime = Time.time + timeBetweenAttacks; // Hace que tengas que esperar un poco para dar tu siguiente ataque
+            }
+        }
     }
 
     public void onCounterAttack(InputAction.CallbackContext context) // Ataque de repulsión
     {
-
+        if (!EnemySquadBattle.IsInMathBattle) // Revisa: Si en el enemigo Squad no se activo el modo de estar en batalla matemática...
+        {
+            // Entonces la tecla C será usada como ataque de repulsión
+            if (context.started && Time.time >= nextRepulsionTime) // context.started detecta el momento exacto en el que se presiona la tecla, evitando que ataque varias veces seguidas como pasa al usar performed
+            // Si presiona el botón C y si ya pasó el tiempo de espera entre ataques
+            {
+                Debug.Log("Ataque de repulsión ejecutado");
+                GiveAttack(0.5f, 15f); // Envia el ataque al enemigo, en este caso al ser un ataque de reulsión, le otorga 0.5 puntoa de daño (Daño físico, empuje ocasionado por el ataque)
+                nextAttackTime = Time.time + timeBetweenAttacks; // Hace que tengas que esperar un poco para dar tu siguiente ataque
+            }
+        }
     }
 
     public void onShield(InputAction.CallbackContext context) // Escudo
     {
-
+        if (!EnemySquadBattle.IsInMathBattle) // Revisa: Si en el enemigo Squad no se activo el modo de estar en batalla matemática...
+        {
+            // Entonces la tecla V será usada como ataque pesado
+            if (context.started && !usingShield) // context.started detecta el momento exacto en el que se presiona la tecla, evitando que ataque varias veces seguidas como pasa al usar performed
+            // Si presiona el botón V y si ya pasó el tiempo de espera entre ataques
+            {
+                usingShield = true; // El player usa el escudo
+                if (Shield != null)
+                {
+                    Shield.SetActive(true);
+                }
+                Invoke(nameof(DesactivateShield), shieldDuration);// Se programa la alarma para que el escudo se quite en el tiempo indicado luego se haber si presionado la tecla
+            }
+            //else if (context.canceled)
+            //{
+            //    usingShield = false;
+            //    if(Shield != null)
+            //    {
+            //        Shield.SetActive(false);
+            //    }
+            //}
+        }
+    }
+    private void DesactivateShield()
+    {
+        usingShield = false;
+        if(Shield != null)
+        {
+            Shield.SetActive(false);
+        }
     }
 
     private void GiveAttack(float damageCaused, float thrustApplied) // Detecta el ataque lanzado al enemigo, indicando el daño realizado al enemigo y el empuje que se haya hecho)
