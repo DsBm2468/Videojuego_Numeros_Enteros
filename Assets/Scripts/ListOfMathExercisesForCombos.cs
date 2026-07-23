@@ -1,14 +1,22 @@
+using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
+public class MathFastExercisesForCombos
+{
+    public string Operation;
+    public int Answer;
+}
 public class ListOfMathExercisesForCombos : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    //[Header("Excersises")]
+    //public List<MathPuzzles> positivePuzzles;
+
     void Start()
     {
         
     }
 
-    // Update is called once per frame
     void Update()
     {
         

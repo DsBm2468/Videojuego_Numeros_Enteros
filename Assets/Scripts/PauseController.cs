@@ -11,9 +11,9 @@ public class PauseController : MonoBehaviour
 
     private bool isPaused = false; // Inicialmente el juego no está pausado
 
-    public void OnPauseKey(InputAction.CallbackContext context)
+    public void OnPause(InputAction.CallbackContext context)
     {
-        if (context.started) // context.started detecta el momento exacto en el que se presiona la tecla esc, evitando que salte varias veces seguidas como pasa al usar performed
+        if (context.started) // context.started detecta el momento exacto en el que se presiona la tecla esc O la tecla P, evitando que salte varias veces seguidas como pasa al usar performed
         {
             PauseAction(); // Revisa la accion de pausa
         }

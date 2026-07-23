@@ -25,6 +25,8 @@ public class PuzzlesLawOfSigns : MonoBehaviour
     [Header("Puzzle Area settings")]
     [SerializeField] public float detectionRange = 2.5f;
     [SerializeField] private InputActionReference StartPuzzle;
+    [SerializeField] private InputActionReference ConfirmAnswer;
+    [SerializeField] private InputActionReference ExitPuzzle;
 
     [Header("UI Interact")]
     public GameObject UIPromptInteraction;
@@ -52,7 +54,7 @@ public class PuzzlesLawOfSigns : MonoBehaviour
         {
             ReadPlayerInput(); // Si no, entonces el jugador debe hacer el hechizo de transformación, entonces prosigue en detectar las teclas dadas por el player
 
-            if (Input.GetKeyDown(KeyCode.X))
+            if (ExitPuzzle != null && ExitPuzzle.action.triggered) // Si el jugador indica que quiere salir del acertijo (presionando X) ESTO SE INDICA ATRAVÉS DEL .action.triggered, detectando el golpe físico en el teclado)
             {
                 Debug.Log("Jugador prefirió salir del acertijo.");
                 ClosePuzzlePanel();
@@ -68,7 +70,7 @@ public class PuzzlesLawOfSigns : MonoBehaviour
         {
             UIPromptInteraction.SetActive(true);
 
-            if (StartPuzzle != null && StartPuzzle.action.triggered) // Si el jugador indica que quiere iniciar el acertijo (presionando E) ESTO SE INDICA ATRAVÉS DEL .action.triggered, detectando el golpe físico enel teclado
+            if (StartPuzzle != null && StartPuzzle.action.triggered) // Si el jugador indica que quiere iniciar el acertijo (presionando E) ESTO SE INDICA ATRAVÉS DEL .action.triggered, detectando el golpe físico en el teclado
             {
                 UIPromptInteraction.SetActive(false);
                 Debug.Log("<color=yellow> Player detectado, ACERTIJO ACTIVADO</color>");
@@ -144,7 +146,7 @@ public class PuzzlesLawOfSigns : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.Z)) // Si presionas la tecla Z...
+        if (ConfirmAnswer != null && ConfirmAnswer.action.triggered) // Si el jugador indica que quiere confirmar la respuesta (presionando Z) ESTO SE INDICA ATRAVÉS DEL .action.triggered, detectando el golpe físico en el teclado
         {
             CheckAnswer();
         }
@@ -154,7 +156,7 @@ public class PuzzlesLawOfSigns : MonoBehaviour
     {
         if (currentInput == "" || currentInput == "-") return; // Si el espacio está vacío o solo tiene -, entonces no pasa nada
 
-        int answerPlayer = int.Parse(currentInput); // Se convierte la respuesta del currentInput a un numero entero
+        int answerPlayer = int.Parse(currentInput.Trim()); // Se convierte la respuesta del currentInput a un numero entero (.Trim() elimina espacios y caracteres invisibles antes de convertir a enter)
 
         if (answerPlayer == correctAnswer) // Si la respuesta dada por el jugador es la respuesta correcta...
         {

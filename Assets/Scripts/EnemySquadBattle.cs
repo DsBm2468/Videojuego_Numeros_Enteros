@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 [System.Serializable]
 public class MathCombos
@@ -54,6 +55,7 @@ public class EnemySquadBattle : MonoBehaviour
     [SerializeField] public float visionRange = 3.5f;
     //[SerializeField] private float attackRange = 1.5f; // Distancia mínima para empezar a atacar
     //[SerializeField] private float timeBeetweenAttacks = 1.5f; // Tiempo de espera entre cada ataque
+    [SerializeField] private InputActionReference ConfirmAnswer;
 
     void Start()
     {
@@ -144,7 +146,7 @@ public class EnemySquadBattle : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.Z)) // Si presionas la tecla Z...
+        if (ConfirmAnswer != null && ConfirmAnswer.action.triggered) // Si el jugador indica que quiere confirmar la respuesta (presionando Z) ESTO SE INDICA ATRAVÉS DEL .action.triggered, detectando el golpe físico en el teclado
         {
             CheckAnswer();
         }

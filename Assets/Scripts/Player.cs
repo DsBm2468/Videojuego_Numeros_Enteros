@@ -5,7 +5,9 @@ using UnityEngine.InputSystem;
 public class Player : MonoBehaviour
 {
     [Header("Life Statistics")]
-    [SerializeField] private float health = 6f; // Se usa [SerializeField] para hacer facil modificaciones a los valores hasta tener los definitivos
+    [SerializeField] private float maxHealth = 6f; // Se usa [SerializeField] para hacer facil modificaciones a los valores hasta tener los definitivos
+    [SerializeField] private float health = 6f;
+    public bool isTutorialScene = false; // Se activa esto solo en la escena del tutorial
     public bool isAlive = true; // Estado actual
     public TextMeshProUGUI TextLevelHealthUI;
 
@@ -108,9 +110,24 @@ public class Player : MonoBehaviour
         //}
     }
 
+    public void OnCrouch(InputAction.CallbackContext context)
+    {
+        if (context.started || context.performed)  // Si se ha hecho una interacción (presionado la tecla S o la flecha de abajo)...
+        {
+            isCrouching = true;
+            transform.localScale = new Vector3(originalSizePlayer.x, originalSizePlayer.y * 0.5f, originalSizePlayer.z); // Se reduce la escala vertical del player a la mitad para que se agache (multiplicarlo por 0.5 reduce el tamaño vertical al 50%)
+            Debug.Log("Player agachado");
+        }
+        else if(context.canceled)
+        {
+            isCrouching = false;
+            ReturnOriginalSize();
+        }
+    }
+
     // MECÁNICAS DE COMBATE BÁSICO
 
-    public void onFastAttack(InputAction.CallbackContext context) // Ataque rápido
+    public void OnFastAttack(InputAction.CallbackContext context) // Ataque rápido
     {
         if (!EnemySquadBattle.IsInMathBattle) // Revisa: Si en el enemigo Squad no se activo el modo de estar en batalla matemática...
         {
@@ -127,7 +144,7 @@ public class Player : MonoBehaviour
         // Si no fue así, entonces Z será usada como confirmación de respuesta
     }
 
-    public void onHeavyAttack(InputAction.CallbackContext context) // Ataque pesado
+    public void OnHeavyAttack(InputAction.CallbackContext context) // Ataque pesado
     {
         if (!EnemySquadBattle.IsInMathBattle) // Revisa: Si en el enemigo Squad no se activo el modo de estar en batalla matemática...
         {
@@ -143,7 +160,7 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void onCounterAttack(InputAction.CallbackContext context) // Ataque de repulsión
+    public void OnCounterAttack(InputAction.CallbackContext context) // Ataque de repulsión
     {
         if (!EnemySquadBattle.IsInMathBattle) // Revisa: Si en el enemigo Squad no se activo el modo de estar en batalla matemática...
         {
@@ -158,7 +175,7 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void onShield(InputAction.CallbackContext context) // Escudo
+    public void OnShield(InputAction.CallbackContext context) // Escudo
     {
         if (!EnemySquadBattle.IsInMathBattle) // Revisa: Si en el enemigo Squad no se activo el modo de estar en batalla matemática...
         {
@@ -227,6 +244,12 @@ public class Player : MonoBehaviour
         else // Sino, cuando el player es atacado, va reduciendo la cantidad de vida
         {
             health -= quantify;
+
+            if (isTutorialScene && health < 1f) // Si el player está en el tutorial y su vida quiere llegar a 1...
+            {
+                health = 1f; // El valor queda congelado para que en el tutorial no llegue al gameover
+            }
+
             Debug.Log("Vida Player: " + health);
 
             if (TextLevelHealthUI != null)
@@ -247,9 +270,27 @@ public class Player : MonoBehaviour
             }
         }
     }
+
+    public void Heal(float valueHealth) // Recuperación de vida del player
+    {
+        if (health >= maxHealth) return; // Si la vida ya está al máximo (6), no pasa nada
+
+        health = Mathf.Min(health + valueHealth, maxHealth);
+        // Mathf.Min( ... , ... ) compara dos números y devuelve el más pequeño de ellos(Si el player tiene 5puntos y medio y con un item recupera 2 puntos, el valor sergirá siendo 6)
+
+        if (TextLevelHealthUI != null)
+        {
+            TextLevelHealthUI.text = "Vida: " + health;
+        }
+        Debug.Log("Energía recuperada. Vida actual: " + health);
+    }
+
     void Update()
     {
         // Actualización del movimiento del player
+
+        // Si el personaje está estático (ej. metido en un acertijo), no intentamos moverlo
+        if (rbPlayer.bodyType == RigidbodyType2D.Static) return;
 
         // Según el nuevo botón presionado, si detecta que está corriendo,
         // utilizará la velocidad de correr, si no, la velocidad actual seguirá siendo la de caminar.
