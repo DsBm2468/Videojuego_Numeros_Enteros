@@ -19,7 +19,7 @@ public class TutorialManager : MonoBehaviour
     public GameObject TransportToLevel1;
 
     [Header("Objects part of the tutorial")]
-    public GameObject Mannequin;
+    public TrainingDummy Mannequin; // Se llama asi en vez de gameobject para poder controlar los disparos desde este script
 
     // Control of tutorial phases
     public enum TutorialPhase { Move, JumpAndCrouch, BasicCombat, Finished }
@@ -35,7 +35,7 @@ public class TutorialManager : MonoBehaviour
     // FASE 2: JumpAndCrounch
     private bool playerJumped = false;
     private bool playerDidDoubleJump = false;
-    private int jumpCount = 0;
+    //private int jumpCount = 0; //ESTO YA NO APLICA
     private bool playerCrouched = false;
 
     // FASE 2: BasicCombat
@@ -59,6 +59,11 @@ public class TutorialManager : MonoBehaviour
         if (TransportToLevel1 != null)
         {
             TransportToLevel1.SetActive(false); // El libro de hechizos para teletransportarse al nivel 1 no aparecerá por ahora
+        }
+
+        if (Mannequin != null)
+        {
+            Mannequin.StopShooting(); // Inicialmente el maniquí no va a estar disparando
         }
 
         ShowInstructionsOfPhase1();
@@ -87,7 +92,7 @@ public class TutorialManager : MonoBehaviour
     // FASE 1: Move
     void ShowInstructionsOfPhase1()
     {
-        Instructions.text = "Usa [A/D] o flechas para moverte y mantén [Shift] para correr";
+        Instructions.text = "Usa [A/D] o flechas para moverte";
     }
 
     void CheckMove()
@@ -99,6 +104,7 @@ public class TutorialManager : MonoBehaviour
         if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed || Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed)
         {
             playerMoved = true;
+            Instructions.text = "Bien, ahora mantén [Shift] para correr";
         }
 
         // CORRER
@@ -120,9 +126,7 @@ public class TutorialManager : MonoBehaviour
     // FASE 2: JumpAndCrounch
     void ShowInstructionsOfPhase2()
     {
-        Instructions.text = "Presiona [Espacio], [flecha hacia arriba] o [W] para saltar, " +
-            "pulsa el botón de salto en el aire para hacer un salto doble, " +
-            "mantén presionado [S] o [flecha hacia abajo] para agacharte";
+        Instructions.text = "Presiona [Espacio], [flecha hacia arriba] o [W] para saltar";
     }
 
     void CheckJumpAndCrouch()
@@ -134,17 +138,35 @@ public class TutorialManager : MonoBehaviour
         // .wasPressedThisFrame es true solo en el fotograma exacto en que hundes la tecla
         if (Keyboard.current.wKey.wasPressedThisFrame || Keyboard.current.upArrowKey.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame)
         {
-            jumpCount++; // Si se detecta que el player presionó alguno de los botones para saltar se le sumará 1 al contador
-
-            if (jumpCount == 1)  // Si el contador es 1...
+            if (!playerJumped) // Si el jugador no ha saltado por primera vez...
             {
-                playerJumped = true; // Se detecta que el jugador saltó
-            } 
-            
-            if (jumpCount >= 2) // Si el contador es igual o mayor a 2...
-            {
-                playerDidDoubleJump = true; // Se detecta que el jugador ya ha hecho doble salto
+                playerJumped = true;
+                Instructions.text = "Excelente, pulsa el botón de salto en el aire para hacer un salto doble";
             }
+            else if(!playerDidDoubleJump) // Si ya salto una vez entonces revisará si aun no ha hecho un salto doble
+            {
+                playerDidDoubleJump = true;
+                Instructions.text = "Ahora, mantén presionado [S] o [flecha hacia abajo] para agacharte";
+            }
+
+            //LOGICA ORIGINAL
+            //
+            //jumpCount++; // Si se detecta que el player presionó alguno de los botones para saltar se le sumará 1 al contador
+
+            //if (jumpCount == 1)  // Si el contador es 1...
+            //{
+            //    playerJumped = true; // Se detecta que el jugador saltó
+            //    jumpCount = 0; // el contador vuelve a ser 0
+            //    Instructions.text = "Excelente, pulsa el botón de salto en el aire para hacer un salto doble";
+            //}
+
+            //jumpCount++; // Si se detecta que el player presionó alguno de los botones para saltar se le sumará 1 al contador
+
+            //if (jumpCount >= 2) // Si el contador es igual o mayor a 2...
+            //{
+            //    playerDidDoubleJump = true; // Se detecta que el jugador ya ha hecho doble salto
+            //    Instructions.text = "Ahora, mantén presionado [S] o [flecha hacia abajo] para agacharte";
+            //}
         }
 
         // AGACHARSE
@@ -167,8 +189,7 @@ public class TutorialManager : MonoBehaviour
     void ShowInstructionsOfPhase3()
     {
         Instructions.text = "Prueba su fuerza en combate. " +
-            "Ataca al muñeco de prueba usando ataques rápidos [Z]," +
-            " pesados [X], de repulsión [C] y protegete con el escudo[V]";
+            "Ataca al muñeco de prueba con ataques rápidos [Z], pesados [X] y de repulsión [C]";
     }
 
     void CheckBasicCombat()
@@ -182,9 +203,27 @@ public class TutorialManager : MonoBehaviour
         if (Keyboard.current.xKey.wasPressedThisFrame) DoHeavyAttack = true; // ATAQUE PESADO con X
         if (Keyboard.current.cKey.wasPressedThisFrame) DoCounterAttack = true; // ATAQUE DE REPULSIÓN (Contrataque) con C
 
+        if (DoFastAttack && DoHeavyAttack && DoCounterAttack) // Si el player ya ha probado los controles  Z, X, C...
+        {
+            Instructions.text = "CUIDADO!! Bolas de fuego a la vista, protegete con el escudo[V]";
+
+            if (Mannequin != null)
+            {
+                Mannequin.StartShooting(); // Empieza a disparar
+            }
+        }
+
         // ESCUDO
         // .wasPressedThisFrame es true solo en el fotograma exacto en que hundes la tecla
-        if (Keyboard.current.vKey.wasPressedThisFrame) ActiveShield = true;
+        if (Keyboard.current.vKey.wasPressedThisFrame)
+        {
+            ActiveShield = true;
+
+            if (Mannequin != null)
+            {
+                Mannequin.StopShooting(); // Al haber activado el escudo, los disparon cesarán ya que el entrenamiento terminó
+            }
+        }
 
         // COMPROBACIÓN PARA PASAR A LA FASE 3 DEL TUTORIAL
         if (DoFastAttack && DoHeavyAttack && DoCounterAttack && ActiveShield) // Si el player ya ha probado todos los controles de combate básico (presionado la teclas Z, X, C, V)
@@ -192,7 +231,8 @@ public class TutorialManager : MonoBehaviour
             if (LimitPhase3 != null) LimitPhase3.SetActive(false); // Se desactiva el último limite del tutorial
 
             CurrentPhase = TutorialPhase.Finished; // Cambia de fase
-            TransportToLevel1.SetActive(false); // El libro de hechizos para teletransportarse al nivel 1 no aparecerá por ahora
+            TransportToLevel1.SetActive(true); // El libro de hechizos para teletransportarse al nivel 1 aparecerá
+            Instructions.text = "¡Excelente trabajo! Completaste el entrenamiento. Acércate al libro de hechizos para viajar al Nivel 1.";
         }
     }
 }

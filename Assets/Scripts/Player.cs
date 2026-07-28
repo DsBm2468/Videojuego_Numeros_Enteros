@@ -21,7 +21,7 @@ public class Player : MonoBehaviour
 
     [Header("Combat Settings")]
     [SerializeField] private float attackRange = 1.5f; // El alcance del golpe
-    [SerializeField] private float timeBetweenAttacks = 0.5f; // Tiempo de espera entre ataques
+    [SerializeField] private float timeBetweenAttacks = 0.05f; // Tiempo de espera entre ataques
     private float nextAttackTime = 0; // Contador interno para el cooldown de ataques
 
     [Header("Shield Settings")]
@@ -170,7 +170,8 @@ public class Player : MonoBehaviour
             {
                 Debug.Log("Ataque de repulsión ejecutado");
                 GiveAttack(0.5f, 15f); // Envia el ataque al enemigo, en este caso al ser un ataque de reulsión, le otorga 0.5 puntoa de daño (Daño físico, empuje ocasionado por el ataque)
-                nextAttackTime = Time.time + timeBetweenAttacks; // Hace que tengas que esperar un poco para dar tu siguiente ataque
+                nextRepulsionTime = Time.time + timeBetweenAttacks;
+                //nextAttackTime = Time.time + timeBetweenAttacks; // Hace que tengas que esperar un poco para dar tu siguiente ataque
             }
         }
     }
@@ -220,16 +221,23 @@ public class Player : MonoBehaviour
                 EnemyStandard scriptEnemyStandard = obj.GetComponent<EnemyStandard>(); // Se crea una variable temporal para acceder a la información de salud actual del enemigo, de esta manera se define hasta que momento se atacará
 
                 EnemySquadBattle scriptEnemySquad = obj.GetComponent<EnemySquadBattle>();
-                
+
+                TrainingDummy scriptDummy = obj.GetComponent<TrainingDummy>();
+
                 if (scriptEnemyStandard != null)
                 {
                     scriptEnemyStandard.EnemyTakingDamage(damageCaused); // Dar la orden de recibir daño
-                    
-                    if (thrustApplied > 0) // APLICAR EMPUJE (Si es que un valor llego a ser mayor a 0)
-                    {
-                        Vector2 direction = (obj.transform.position - transform.position).normalized; // .normalized hace que unity olvide la distancia anterior
-                        obj.GetComponent<Rigidbody2D>().AddForce(direction * thrustApplied, ForceMode2D.Impulse);
-                    }
+                }
+
+                if (scriptDummy != null)
+                {
+                    scriptDummy.DummyTakingDamage(damageCaused); // Dar la orden de recibir daño
+                }
+
+                if (thrustApplied > 0) // APLICAR EMPUJE (Si es que un valor llego a ser mayor a 0)
+                {
+                    Vector2 direction = (obj.transform.position - transform.position).normalized; // .normalized hace que unity olvide la distancia anterior
+                    obj.GetComponent<Rigidbody2D>().AddForce(direction * thrustApplied, ForceMode2D.Impulse);
                 }
             }
         }
