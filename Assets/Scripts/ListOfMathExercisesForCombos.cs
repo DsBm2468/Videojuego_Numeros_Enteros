@@ -9,16 +9,12 @@ public class MathFastExercisesForCombos
 }
 public class ListOfMathExercisesForCombos : MonoBehaviour
 {
-    //[Header("Excersises")]
-    //public List<MathPuzzles> positivePuzzles;
+    [Header("Excercises")]
+    public List<MathCombos> excercises;
 
-    void Start()
+    public MathCombos UseOneRandom()
     {
-        
-    }
-
-    void Update()
-    {
-        
+        int index = Random.Range(0, excercises.Count);
+        return excercises[index];
     }
 }

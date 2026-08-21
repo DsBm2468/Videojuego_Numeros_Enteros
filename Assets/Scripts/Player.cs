@@ -38,6 +38,8 @@ public class Player : MonoBehaviour
     private bool usingShield; // Detecta si la tecla V está presionada (Si el player activó el escudo), al ser escrito asi, automáticamente empieza siendo false
     private float nextRepulsionTime; 
 
+    public bool isTransformed = false; // Inicialmente el personaje no está transformado
+
     void Awake()
     { 
         // Se encarga que al iniciar el juego, el jugador permanezca en el escenario, esto permite conectar componentes, a diferencia del start que da valores iniciales
@@ -112,6 +114,9 @@ public class Player : MonoBehaviour
 
     public void OnCrouch(InputAction.CallbackContext context)
     {
+        // Si el jugador está transformado (Gigante o Pequeño), se ignora la acción de agacharse
+        if (isTransformed == true) return;
+
         if (context.started || context.performed)  // Si se ha hecho una interacción (presionado la tecla S o la flecha de abajo)...
         {
             isCrouching = true;
@@ -253,6 +258,9 @@ public class Player : MonoBehaviour
         {
             health -= quantify;
 
+            health = Mathf.Max(0f, health);
+            // Mathf.Max( ... , ... ) compara dos números y devuelve el más grande de ellos(Si el player tiene 5 puntos y al caer al vacio pierde 6 puntos, la resta da negativa, pero al comparar este dato con el 0 (que indica el gameover) el valor será 0, evitando que en los datos de vida aparezcan valores negativos)
+
             if (isTutorialScene && health < 1f) // Si el player está en el tutorial y su vida quiere llegar a 1...
             {
                 health = 1f; // El valor queda congelado para que en el tutorial no llegue al gameover
@@ -298,7 +306,7 @@ public class Player : MonoBehaviour
         // Actualización del movimiento del player
 
         // Si el personaje está estático (ej. metido en un acertijo), no intentamos moverlo
-        if (rbPlayer.bodyType == RigidbodyType2D.Static) return;
+        //if (rbPlayer.bodyType == RigidbodyType2D.Static) return;
 
         // Según el nuevo botón presionado, si detecta que está corriendo,
         // utilizará la velocidad de correr, si no, la velocidad actual seguirá siendo la de caminar.
@@ -315,6 +323,7 @@ public class Player : MonoBehaviour
     public void ReturnOriginalSize()
     {
         transform.localScale = originalSizePlayer; // Vuelve al valor original del player
+        isTransformed = false; // Le recuerda al sistema que el player ya no está transformado
         Debug.Log("Player vuelve al tamaño original");
     }
 

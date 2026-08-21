@@ -28,6 +28,9 @@ public class PuzzlesLawOfSigns : MonoBehaviour
     [SerializeField] private InputActionReference ConfirmAnswer;
     [SerializeField] private InputActionReference ExitPuzzle;
 
+    // LIST OF PUZZLES
+   // MathPuzzles puzzleSelected; // Se crea una variable de tipo de la clase MathPuzzles para guardar el ejercicio seleccionado
+
     [Header("UI Interact")]
     public GameObject UIPromptInteraction;
 
@@ -85,8 +88,9 @@ public class PuzzlesLawOfSigns : MonoBehaviour
                 
                 if(playerRb != null)
                 {
+                    Time.timeScale = 0;
                     playerRb.linearVelocity = Vector2.zero; // Cuando sea detectado y activado un acertijo, la velocidad de movimiento del jugador va a cero para que no se mueva de ahí hasta que resuelva o salga del acertijo
-                    playerRb.bodyType = RigidbodyType2D.Static; // Por medio de ls propiedad bodytype que define el comportamiento de un objeto con fisica 2D hace que el rigidbody 2D del player se mantenga estatico
+                    //playerRb.bodyType = RigidbodyType2D.Static; // Por medio de ls propiedad bodytype que define el comportamiento de un objeto con fisica 2D hace que el rigidbody 2D del player se mantenga estatico
                 }
             }
             //else
@@ -104,7 +108,7 @@ public class PuzzlesLawOfSigns : MonoBehaviour
     {
         ListOfPuzzles Operations = Object.FindFirstObjectByType<ListOfPuzzles>(); // En esta variable se guardará el primer objeto detectado con el tipo ListOfPuzzles
         MathPuzzles puzzleSelected; // Se crea una variable de tipo de la clase MathPuzzles para guardar el ejercicio seleccionado
-
+        
         if (Operations != null)
         {
             if (growPlayer == true) // Si en el inspector está indicado que el acertijo hará que el player crezca...
@@ -121,6 +125,7 @@ public class PuzzlesLawOfSigns : MonoBehaviour
             {
                 operationText.text = puzzleSelected.Operation;
                 correctAnswer = puzzleSelected.Answer;
+                Debug.Log(puzzleSelected.Answer);
             }
         }
     }
@@ -139,10 +144,22 @@ public class PuzzlesLawOfSigns : MonoBehaviour
 
         foreach (char c in Input.inputString) // Por cada cáracter presionado...
         {
-            if (char.IsDigit(c) || c == '-') // Si el valor dado es un digito (0 a 9) o el valor es negativo (lleva el signo -) OJO: HASTA QUE NO SE PRESIONE LA TECLA PARA CONFIRMAR LA RESPUESTA, PUEDES ESCRIBIR CUANTOS CÁRACTERES QUIERAS
+            //if (char.IsDigit(c) || c == '-') // Si el valor dado es un digito (0 a 9) o el valor es negativo (lleva el signo -) OJO: HASTA QUE NO SE PRESIONE LA TECLA PARA CONFIRMAR LA RESPUESTA, PUEDES ESCRIBIR CUANTOS CÁRACTERES QUIERAS
+            //{
+            //    currentInput += c; // Se van agregando los caracteres uno seguido del otro
+            //    playerInputText.text = currentInput; // Se muestra la respuesta del player en el panel
+            //}
+            if (char.IsDigit(c)) // Si el valor dado es un digito (0 a 9)...
             {
                 currentInput += c; // Se van agregando los caracteres uno seguido del otro
                 playerInputText.text = currentInput; // Se muestra la respuesta del player en el panel
+            } 
+            else if (c == '-' && currentInput.Length == 0) // Si no, el valor es negativo (lleva el signo -) y el - es el primer caracter escrito [currentInput.Length == 0 hace que el jugador no pueda escribir el - en otras posiciones del texto]
+                                                           // OJO: HASTA QUE NO SE PRESIONE LA TECLA PARA CONFIRMAR LA RESPUESTA, PUEDES ESCRIBIR CUANTOS CÁRACTERES QUIERAS
+            {
+                currentInput += c; // Se van agregando los caracteres uno seguido del otro
+                playerInputText.text = currentInput; // Se muestra la respuesta del player en el panel
+
             }
         }
 
@@ -154,9 +171,11 @@ public class PuzzlesLawOfSigns : MonoBehaviour
 
     void CheckAnswer()
     {
-        if (currentInput == "" || currentInput == "-") return; // Si el espacio está vacío o solo tiene -, entonces no pasa nada
+       // if (currentInput == "" || currentInput == "-") return; // Si el espacio está vacío o solo tiene -, entonces no pasa nada
 
         int answerPlayer = int.Parse(currentInput.Trim()); // Se convierte la respuesta del currentInput a un numero entero (.Trim() elimina espacios y caracteres invisibles antes de convertir a enter)
+
+        //Debug.Log($"[PRUEBA] Tu respuesta: '{answerPlayer}' | Respuesta Correcta Guardada: '{puzzleSelected.Answer}'");
 
         if (answerPlayer == correctAnswer) // Si la respuesta dada por el jugador es la respuesta correcta...
         {
@@ -168,6 +187,7 @@ public class PuzzlesLawOfSigns : MonoBehaviour
             //Invoke("ClosePuzzlePanel", 0.5f);
             ClosePuzzlePanel();
             Destroy(gameObject);
+            Time.timeScale = 1;
         }
         else
         {
@@ -175,6 +195,7 @@ public class PuzzlesLawOfSigns : MonoBehaviour
             Debug.Log("Acertijo Fallido");
             transformationSpell = false;
             //Invoke("ClosePuzzlePanel", 0.5f);
+            Time.timeScale = 1;
             ClosePuzzlePanel();
         }
 
@@ -189,6 +210,12 @@ public class PuzzlesLawOfSigns : MonoBehaviour
 
         if (playerObj != null)
         {
+            Player playerScript = playerObj.GetComponent<Player>();  // Se trae información del player
+            if (playerScript != null)
+            {
+                playerScript.isTransformed = true; // Indicando que el player se esta transformando, bloqueandole la opcion de agacharse
+            }
+
             if (growPlayer == true)
             {
                 playerObj.transform.localScale = new Vector3(2.5f, 2.5f, 1f); // Se vuelve Gigante
@@ -211,9 +238,11 @@ public class PuzzlesLawOfSigns : MonoBehaviour
 
         if (playerRb != null)
         {
+            Time.timeScale = 1;
             playerRb.bodyType = RigidbodyType2D.Dynamic; // El player vuelve a sus físicas para poder moverse
             playerRb.constraints = RigidbodyConstraints2D.FreezeRotation; // Mantenemos tus restricciones
             playerRb = null; // Finalmente, se limpia la variable para el próximo uso
+            //playerRb.linearVelocity = new Vector2(1, playerRb.linearVelocity.y);
         }
 
         //Finalmente, se borran los datos dados en el currentInput y playerInputText.text

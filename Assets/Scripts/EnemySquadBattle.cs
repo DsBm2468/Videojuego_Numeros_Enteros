@@ -95,12 +95,39 @@ public class EnemySquadBattle : MonoBehaviour
         canvasMathCombos.SetActive(true); // Aparece el panel de batalla por combos matemáticos
         virtualCamera.Lens.OrthographicSize = zoomCamera; // Hace el zoom indicado hacia la escena de combate
         feedbackText.text = "";
+
+        //NUEVO
+        // -----------------------------------
+        DisablePlayerMovement(player); // Se llama el void para desactivar los actions del action map de Player
+        // -----------------------------------
+
         OperationInScreen(); // Se llama a una de las operaciones en pantalla
 
         if (timerCoroutine != null) StopCoroutine(timerCoroutine); // Si había anteriormente un contador corriendo, entonces será apagado
         timerCoroutine = StartCoroutine(StartTimerRoutine()); // Se inicia el contador del tiempo para responder las operaciones
     }
-    
+
+    //NUEVO
+    // -----------------------------------
+    private void DisablePlayerMovement(GameObject player) // DESACTIVAR MOVIMIENTO Y DEMÁS MECANICAS DEL PLAYER, DEJANDO SOLO HABILITADA LA DE CONFIRMAR RESPUESTA
+    {
+        if (player != null)
+        {
+            PlayerInput plInput = player.GetComponent<PlayerInput>(); // Tiene a la mano las actions del action map de player
+            if (plInput != null)
+            {
+                plInput.actions.FindActionMap("Player")?.Disable(); // Se desactiva unicamente el action Map indicado en esta linea (Player)
+            }
+
+            Rigidbody2D plRb = player.GetComponent<Rigidbody2D>();
+            if (plRb != null)
+            {
+                plRb.linearVelocity = Vector2.zero; // Se frena de golpe al player
+            }
+        }
+    }
+    // -----------------------------------
+
     System.Collections.IEnumerator StartTimerRoutine() // Inicia el temporizador de la barra (ejecutandose frame a frame)
     {
         float timeRemaining = timeToAnswer; // Se crea una cuenta regresiva para responder las operaciones antes que este tiempo se acabe, se crea esta nueva variable para evitar cambios no deseados en el valor original que está en timeToAnswer
@@ -231,6 +258,11 @@ public class EnemySquadBattle : MonoBehaviour
         currentInput = "";
         playerInputText.text = "";
 
+        //NUEVO
+        // -----------------------------------
+        EnablePlayerMovement();
+        // -----------------------------------
+
         if (health > 0) // Si el enemigo sigue vivo///
         {
             this.enabled = false; // Se desactiva el script de forma temporal, haciendo que en casos de equivocarse o quedarse sin tiempo, el player se salga del combate y pierda vida en el proceso
@@ -238,6 +270,22 @@ public class EnemySquadBattle : MonoBehaviour
         }
        
     }
+
+    //NUEVO
+    // -----------------------------------
+    private void EnablePlayerMovement() // // VOLVER A ACTIVAR MOVIMIENTO Y DEMÁS MECANICAS DEL PLAYER
+    {
+        GameObject playerObj = GameObject.FindWithTag("Player"); // Se llama a los componentes del player
+        if (playerObj != null)
+        {
+            PlayerInput pInput = playerObj.GetComponent<PlayerInput>(); // Tiene a la mano las actions del action map de player
+            if (pInput != null)
+            {
+                pInput.actions.FindActionMap("Player")?.Enable(); // Reactiva el mapa de movimiento del personaje cuando termina el combate
+            }
+        }
+    }
+    // -----------------------------------
 
     void ReturnDinamicEnemy()
     {
